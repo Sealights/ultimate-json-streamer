@@ -75,7 +75,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should output the first 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
@@ -96,7 +96,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should output the last 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
@@ -117,7 +117,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
         });
@@ -205,7 +205,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should iterate on all elements using ${ParserMode.BatchAndProcess} as strings`, (done) => {
@@ -225,7 +225,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should output the first 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
@@ -246,7 +246,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should output the last 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
@@ -267,7 +267,7 @@ describe('performance tests', () => {
                     done();
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 });
             });
             it(`should output all objects requested`, (done) => {
@@ -304,16 +304,16 @@ describe('performance tests', () => {
                     done();
                 });
                 transformer.on('meta', (data) => {
-                    counter ++;
+                    counter++;
                 });
                 transformer.on('dependencies', (data) => {
-                    counter ++;
+                    counter++;
                 });
                 transformer.on('addedOrUpdatedComponents', (data) => {
-                    counter ++;
+                    counter++;
                 });
                 transformer.on('configurationData', (data) => {
-                    counter ++;
+                    counter++;
                 });
             });
         });
@@ -381,7 +381,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should output the first 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
@@ -402,7 +402,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
         });
@@ -470,7 +470,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 })
             });
             it(`should output the first 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
@@ -491,7 +491,7 @@ describe('performance tests', () => {
                     done()
                 });
                 transformer.on('features', (data) => {
-                    counter += data.length;
+                    counter += data.amount;
                 });
             });
         });

@@ -28,7 +28,7 @@ describe('json-transformer', () => {
                         attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
                     }]);
                     stream.on('e', (data) => {
-                        expect(data).to.deep.eq(ex.e)
+                        expect(data.data).to.deep.eq(ex.e)
                     })
                     pipeline([inputStream, stream], () => {
                         done()
@@ -44,11 +44,11 @@ describe('json-transformer', () => {
                 }]);
                 const called = [];
                 stream.on('b', (data) => {
-                    expect(data).to.deep.eq(ex.b);
+                    expect(data.data).to.deep.eq(ex.b);
                     called.push('b');
                 });
                 stream.on('e', (data) => {
-                    expect(data).to.deep.eq(ex.e);
+                    expect(data.data).to.deep.eq(ex.e);
                     called.push('e');
                 })
                 pipeline([inputStream, stream], () => {
@@ -70,7 +70,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -87,7 +87,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -111,7 +111,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(data);
+                    res.push(data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -128,7 +128,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(data);
+                    res.push(data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -152,7 +152,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -170,7 +170,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -199,7 +199,7 @@ describe('json-transformer', () => {
                     attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
                 }]);
                 stream.on('e', (data) => {
-                    expect(data).to.deep.eq(ex.e)
+                    expect(data.data).to.deep.eq(ex.e)
                 })
                 pipeline([inputStream, stream], () => {
                     done()
@@ -215,11 +215,11 @@ describe('json-transformer', () => {
                 }]);
                 const called = [];
                 stream.on('b', (data) => {
-                    expect(data).to.deep.eq(ex.b);
+                    expect(data.data).to.deep.eq(ex.b);
                     called.push('b');
                 });
                 stream.on('e', (data) => {
-                    expect(data).to.deep.eq(ex.e);
+                    expect(data.data).to.deep.eq(ex.e);
                     called.push('e');
                 })
                 pipeline([inputStream, stream], () => {
@@ -241,7 +241,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -258,7 +258,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -282,7 +282,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(data);
+                    res.push(data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -299,7 +299,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(data);
+                    res.push(data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -323,7 +323,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {
@@ -341,7 +341,7 @@ describe('json-transformer', () => {
                 const res = [];
                 let calls = 0;
                 stream.on('f', (data) => {
-                    res.push(...data);
+                    res.push(...data.data);
                     calls++;
                 });
                 pipeline([inputStream, stream], () => {

@@ -33,7 +33,7 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                     this.relevantElementCount++;
                     this.elementsArray.push(buffer);
                     if (batchSize === this.relevantElementCount) {
-                        this.emitData("[" + this.elementsArray.join(',') + "]");
+                        this.emitData("[" + this.elementsArray.join(',') + "]", this.relevantElementCount);
                         this.relevantElementCount = 0;
                         this.elementsArray = [];
                     }
@@ -44,7 +44,7 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                     this.relevantElementCount++;
                     this.elementsArray.push(buffer);
                     if (batchSize === this.relevantElementCount) {
-                        this.emitData( "[" + this.elementsArray.join(',') + "]");
+                        this.emitData( "[" + this.elementsArray.join(',') + "]", this.relevantElementCount);
                         this.emit('done');
                     }
                 }
@@ -52,7 +52,7 @@ export class JsonStreamElementManager<T> extends EventEmitter{
             case ParserMode.SkipAndStream:
                 if (this.elementCount > skip) {
                     this.relevantElementCount++;
-                    this.emitData(buffer);
+                    this.emitData(buffer, 1);
                     if (batchSize === this.relevantElementCount) {
                         this.emit('done');
                     }
@@ -63,24 +63,29 @@ export class JsonStreamElementManager<T> extends EventEmitter{
         return false;
     }
 
-    private emitData(data: string): void {
+    private emitData(data: string, amount?: number): void {
         const outputMode = this.attributeOptions.output;
         switch (outputMode) {
             case OutputMode.JSON:
-                this.emit('data', JSON.parse(data))
+                this.emit('data', {
+                    data: JSON.parse(data),
+                    amount
+                })
                 break;
             case OutputMode.STRING:
-                this.emit('data', data)
+                this.emit('data', {
+                    data, amount
+                });
                 break;
         }
     }
 
     private logProgress() {
         if (this.elementCount === 1) {
-            console.info('Found first element')
+            console.info('Found first element');
         }
         if (this.relevantElementCount === 1) {
-            console.info('Found first relevant element')
+            console.info('Found first relevant element');
         }
 
         if (this.relevantElementCount > 0 && this.relevantElementCount % 1000 === 0) {
