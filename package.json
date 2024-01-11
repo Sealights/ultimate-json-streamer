@@ -1,4 +1,6 @@
 {
+  "name": "@sealights/ultimate-json-streamer",
+  "version": "0.0.3",
   "author": {
     "name": "Avichai Shapira",
     "email": "avichai.shapira@sealights.io"
@@ -58,12 +60,10 @@
     "dist/index.d.ts",
     "dist/index.js"
   ],
-  "name": "@sealights/ultimate-json-streamer",
   "scripts": {
     "pt": "mocha dist/test/performanceTests/ --recursive --timeout=0",
     "ut": "mocha dist/test/unitTest/ --recursive --timeout=0",
     "test": "npm run ut",
     "tsc": "rm -rf dist && tsc"
-  },
-  "version": "0.0.2"
+  }
 }

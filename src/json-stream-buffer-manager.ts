@@ -7,22 +7,19 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
     private lastCharEscaped = false;
     private lastCharEscapedIndex: number;
     private openQuote = false;
-    private continueOnPsik = false;
+    private continueOnComma = false;
     private elementBuffer = '';
     private bracketNum = 0;
     private handledFirstBracket = false;
     private reset = false;
     private static readonly DETECTION_REGEX = /[{}\[\]\\",]/g;
-    private static readonly ADD_REQUIRED_CHARS_TO_START_ARR_INDEX = 4; // "attr":[
-    private static readonly ADD_REQUIRED_CHARS_TO_START_OBJ_INDEX = 3; // "attr":
 
-    constructor(private readonly options: JsonStreamOptionsManager<T>) {
+    constructor(private readonly options: JsonStreamOptionsManager<T>, private readonly logger) {
         super()
     }
 
     public addChunkToBuffer(chunk: string) {
         this.buffer += chunk.toString();
-        this.cleanNewLines();
     }
 
     public stop(): void {
@@ -83,13 +80,13 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
         let match;
         let currBuffer = this.buffer;
         while ((match = regex.exec(currBuffer)) !== null) {
-            if (this.continueOnPsik) {
+            if (this.continueOnComma) {
                 if (match[0] === ']') {
                     this.emit('done');
                     this.buffer = currBuffer.substring(match.index + 1);
                     return;
                 }
-                this.continueOnPsik = false;
+                this.continueOnComma = false;
                 lastIndex = match.index + 1;
                 continue;
             }
@@ -105,7 +102,7 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
                         this.buffer = currBuffer.substring(match.index + 1);
                         return;
                     }
-                    this.continueOnPsik = true;
+                    this.continueOnComma = true;
                 } else {
                     this.emit('done');
                     this.buffer = currBuffer.substring(match.index + 2);
@@ -154,9 +151,7 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
         const nextAttribute = this.findClosestAttribute(detectionBuffer);
         if (nextAttribute) {
             this.options.setAttributeInProgress(nextAttribute.attribute)
-            console.info(`detected start of relevant key ${nextAttribute}`);
-            const attributeLength = (<string>nextAttribute.attribute).length;
-            const offset: number = this.options.getAttributeInProgress().type === ParserValueType.Array ? JsonStreamBufferManager.ADD_REQUIRED_CHARS_TO_START_ARR_INDEX : JsonStreamBufferManager.ADD_REQUIRED_CHARS_TO_START_OBJ_INDEX;
+            this.logger.info(`detected start of relevant key ${nextAttribute}`);
             const totalOffset = this.options.findStartOffset(detectionBuffer, nextAttribute.value);
             if(totalOffset > this.previousBuffer.length) {
                 // found in new buffer, previous buffer discard
@@ -177,15 +172,9 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
     }
 
     private resetTrackers(){
-        this.continueOnPsik = false;
+        this.continueOnComma = false;
         this.openQuote = false;
         this.lastCharEscaped = false;
     }
 
-    private cleanNewLines() {
-        // this.buffer = this.buffer.replace(/\{\n"/, '{\"');
-        // this.buffer = this.buffer.replace(/,\n"/, ',\"');
-        // this.buffer = this.buffer.replace(/\[\n"/, '[\"');
-        // this.buffer = this.buffer.replace(/\[\n\{/, '[{');
-    }
 }

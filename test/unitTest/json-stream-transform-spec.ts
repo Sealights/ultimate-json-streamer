@@ -1,5 +1,7 @@
 import * as stream from "stream";
-import {JSONStreamTransformer, OutputMode, ParserMode, ParserValueType} from "../../src/json-stream-transformer";
+import {
+    IDataEmit, JSONStreamTransformer, OutputMode, ParserMode, ParserValueType
+} from "../../src/json-stream-transformer";
 import {pipeline} from "stream";
 import chai = require('chai');
 import sinon = require("sinon");
@@ -27,8 +29,9 @@ describe('json-transformer', () => {
                     const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                         attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
                     }]);
-                    stream.on('e', (data) => {
-                        expect(data.data).to.deep.eq(ex.e)
+                    stream.on('data', (data: IDataEmit) => {
+                        expect(data.attributeName).to.eq('e');
+                        expect(data.data).to.deep.eq(ex.e);
                     })
                     pipeline([inputStream, stream], () => {
                         done()
@@ -43,14 +46,16 @@ describe('json-transformer', () => {
                     attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
                 }]);
                 const called = [];
-                stream.on('b', (data) => {
-                    expect(data.data).to.deep.eq(ex.b);
-                    called.push('b');
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'b') {
+                        expect(data.data).to.deep.eq(ex.b);
+                        called.push('b');
+                    }
+                    if(data.attributeName === 'e') {
+                        expect(data.data).to.deep.eq(ex.e);
+                        called.push('e');
+                    }
                 });
-                stream.on('e', (data) => {
-                    expect(data.data).to.deep.eq(ex.e);
-                    called.push('e');
-                })
                 pipeline([inputStream, stream], () => {
                     expect(called).to.have.members(['b','e']);
                     done();
@@ -69,13 +74,19 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                let positions: { start: number, end: number, amount: number}[] = []
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                        positions.push({ start: data.startIdx, end: data.endIdx, amount: data.amount});
+                    }
+
                 });
                 pipeline([inputStream, stream], () => {
                     expect(res).to.deep.eq(ex.f);
                     expect(calls).to.eq(5);
+                    expect(positions).to.deep.eq([{ start: 0, end: 10, amount: 10}, { start: 10, end: 20, amount: 10}, { start: 20, end: 30, amount: 10},{ start: 30, end: 40, amount: 10},{ start: 40, end: 50, amount: 10}]);
                     done()
                 });
             });
@@ -86,14 +97,19 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                let positions: { start: number, end: number, amount: number}[] = []
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                        positions.push({ start: data.startIdx, end: data.endIdx, amount: data.amount});
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     ex.f.splice(0, 20);
                     expect(res).to.deep.eq(ex.f);
                     expect(calls).to.eq(3);
+                    expect(positions).to.deep.eq([{ start: 20, end: 30, amount: 10},{ start: 30, end: 40, amount: 10},{ start: 40, end: 50, amount: 10}]);
                     done()
                 });
             });
@@ -110,9 +126,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     expect(res).to.deep.eq(ex.f);
@@ -127,9 +145,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     ex.f.splice(0, 20);
@@ -151,9 +171,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     ex.f.splice(10, 40);
@@ -169,9 +191,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     const related = ex.f.splice(20, 10);
@@ -198,9 +222,11 @@ describe('json-transformer', () => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
                 }]);
-                stream.on('e', (data) => {
-                    expect(data.data).to.deep.eq(ex.e)
-                })
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'e') {
+                        expect(data.data).to.deep.eq(ex.e)
+                    }
+                });
                 pipeline([inputStream, stream], () => {
                     done()
                 });
@@ -214,14 +240,16 @@ describe('json-transformer', () => {
                     attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
                 }]);
                 const called = [];
-                stream.on('b', (data) => {
-                    expect(data.data).to.deep.eq(ex.b);
-                    called.push('b');
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'b'){
+                        expect(data.data).to.deep.eq(ex.b);
+                        called.push('b');
+                    }
+                    if(data.attributeName === 'e'){
+                        expect(data.data).to.deep.eq(ex.e);
+                        called.push('e');
+                    }
                 });
-                stream.on('e', (data) => {
-                    expect(data.data).to.deep.eq(ex.e);
-                    called.push('e');
-                })
                 pipeline([inputStream, stream], () => {
                     expect(called).to.have.members(['b','e']);
                     done();
@@ -240,9 +268,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     expect(res).to.deep.eq(ex.f);
@@ -257,9 +287,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     ex.f.splice(0, 20);
@@ -281,9 +313,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     expect(res).to.deep.eq(ex.f);
@@ -298,9 +332,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     ex.f.splice(0, 20);
@@ -322,9 +358,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     ex.f.splice(10, 40);
@@ -340,9 +378,11 @@ describe('json-transformer', () => {
                 }]);
                 const res = [];
                 let calls = 0;
-                stream.on('f', (data) => {
-                    res.push(...data.data);
-                    calls++;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'f') {
+                        res.push(...data.data);
+                        calls++;
+                    }
                 });
                 pipeline([inputStream, stream], () => {
                     const related = ex.f.splice(20, 10);

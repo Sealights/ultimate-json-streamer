@@ -1,4 +1,4 @@
-import {IParserTransformOptions, OutputMode, ParserMode} from "./json-stream-transformer";
+import {IDataEmit, ILogger, IParserTransformOptions, OutputMode, ParserMode} from "./json-stream-transformer";
 import {EventEmitter} from 'events';
 
 export class JsonStreamElementManager<T> extends EventEmitter{
@@ -6,7 +6,7 @@ export class JsonStreamElementManager<T> extends EventEmitter{
     private relevantElementCount = 0;
     private elementsArray: string[] = [];
 
-    constructor(private readonly attributeOptions: IParserTransformOptions<T>) {
+    constructor(private readonly attributeOptions: IParserTransformOptions<T>, private readonly logger: ILogger) {
         super();
     }
 
@@ -33,7 +33,8 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                     this.relevantElementCount++;
                     this.elementsArray.push(buffer);
                     if (batchSize === this.relevantElementCount) {
-                        this.emitData("[" + this.elementsArray.join(',') + "]", this.relevantElementCount);
+                        this.emitData("[" + this.elementsArray.join(',') + "]", this.relevantElementCount,
+                            this.elementCount - this.relevantElementCount, this.elementCount);
                         this.relevantElementCount = 0;
                         this.elementsArray = [];
                     }
@@ -44,7 +45,8 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                     this.relevantElementCount++;
                     this.elementsArray.push(buffer);
                     if (batchSize === this.relevantElementCount) {
-                        this.emitData( "[" + this.elementsArray.join(',') + "]", this.relevantElementCount);
+                        this.emitData( "[" + this.elementsArray.join(',') + "]", this.relevantElementCount,
+                            this.elementCount - this.relevantElementCount, this.elementCount);
                         this.emit('done');
                     }
                 }
@@ -63,18 +65,18 @@ export class JsonStreamElementManager<T> extends EventEmitter{
         return false;
     }
 
-    private emitData(data: string, amount?: number): void {
+    private emitData(data: string, amount?: number, startIdx?: number, endIdx?: number): void {
         const outputMode = this.attributeOptions.output;
         switch (outputMode) {
             case OutputMode.JSON:
-                this.emit('data', {
+                this.emit('data', <IDataEmit>{
                     data: JSON.parse(data),
-                    amount
+                    amount, startIdx, endIdx
                 })
                 break;
             case OutputMode.STRING:
-                this.emit('data', {
-                    data, amount
+                this.emit('data', <IDataEmit>{
+                    data, amount, startIdx, endIdx
                 });
                 break;
         }
@@ -82,18 +84,18 @@ export class JsonStreamElementManager<T> extends EventEmitter{
 
     private logProgress() {
         if (this.elementCount === 1) {
-            console.info('Found first element');
+            this.logger.info('Found first element');
         }
         if (this.relevantElementCount === 1) {
-            console.info('Found first relevant element');
+            this.logger.info('Found first relevant element');
         }
 
         if (this.relevantElementCount > 0 && this.relevantElementCount % 1000 === 0) {
-            console.info(`Relevant Element number ${this.elementCount}`, {
+            this.logger.debug(`Relevant Element number ${this.elementCount}`, {
                 memoryUsage: formatBytes(process.memoryUsage().rss), cpuUsage: process.cpuUsage()
             });
         } else if (this.elementCount % 1000 === 0) {
-            console.info(`Element number ${this.elementCount}`, {
+            this.logger.debug(`Element number ${this.elementCount}`, {
                 memoryUsage: formatBytes(process.memoryUsage().rss), cpuUsage: process.cpuUsage()
             });
         }

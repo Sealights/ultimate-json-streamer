@@ -2,14 +2,16 @@ import * as zlib from "zlib";
 
 const fs = require('fs');
 const process = require('process');
-import {pipeline, Transform} from 'stream';
+import {pipeline, Transform, Readable} from 'stream';
 import {JsonStreamOptionsManager} from "./json-stream-options-manager";
 import {JsonStreamBufferManager} from "./json-stream-buffer-manager";
 import {JsonStreamElementManager} from "./json-stream-element-manager";
 
 export class JSONStreamTransformer {
-    public static createTransformStream<T>(options: IParserTransformOptions<T>[]) {
-        return new ParserTransform<T>(options);
+    private static transformer: ParserTransform<any>
+    public static createTransformStream<T>(options: IParserTransformOptions<T>[], closeOnDone = false, logger?: ILogger) {
+        JSONStreamTransformer.transformer = new ParserTransform<T>(options, closeOnDone, logger || console);
+        return JSONStreamTransformer.transformer;
     }
 }
 export enum ParserValueType {
@@ -29,6 +31,21 @@ export enum OutputMode {
     STRING = 'STRING'
 }
 
+export interface IDataEmit {
+    attributeName: string;
+    data: any;
+    amount?: number;
+    startIdx?: number,
+    endIdx?: number
+}
+export interface ILogger {
+    debug(message: string, additionalData?: any);
+    info(message: string, additionalData?: any);
+    warn(message: string, additionalData?: any);
+    error(message: string, additionalData?: any);
+}
+
+
 export interface IParserTransformOptions<T> {
     attributeName: keyof T,
     type: ParserValueType,
@@ -39,22 +56,25 @@ export interface IParserTransformOptions<T> {
     output: OutputMode
 }
 class ParserTransform<T> extends Transform {
+
     private shouldEnd = false;
+    private calledDone = false;
     private optionsManager: JsonStreamOptionsManager<T>;
     private bufferManager: JsonStreamBufferManager<T>;
     private elementManager: JsonStreamElementManager<T>;
-    constructor(options: IParserTransformOptions<T>[]) {
+
+    constructor(options: IParserTransformOptions<T>[], private readonly closeOnDone = false, private logger: ILogger) {
         super({readableObjectMode: true, writableObjectMode: false, decodeStrings: false, allowHalfOpen: false});
-        this.optionsManager = new JsonStreamOptionsManager<T>(options);
-        this.bufferManager = new JsonStreamBufferManager<T>(this.optionsManager);
+        this.optionsManager = new JsonStreamOptionsManager<T>(options, logger);
+        this.bufferManager = new JsonStreamBufferManager<T>(this.optionsManager, logger);
         this.setListeners();
     }
 
     private setListeners() {
         this.bufferManager.on('ready', (elementBuffer) => {
             if(!this.elementManager) {
-                this.elementManager = new JsonStreamElementManager<T>(this.optionsManager.getAttributeInProgress());
-                this.elementManager.on('data', (data) => {
+                this.elementManager = new JsonStreamElementManager<T>(this.optionsManager.getAttributeInProgress(), this.logger);
+                this.elementManager.on('data', (data: IDataEmit) => {
                     this.customEmit(this.optionsManager.getAttributeInProgress().attributeName, data);
                 });
                 this.elementManager.on('done', () => {
@@ -69,12 +89,19 @@ class ParserTransform<T> extends Transform {
     }
 
     _transform(chunk: string, encoding: string, callback: Function) {
-        if (this.shouldEnd) {
-            return this._flush(callback);
+        if (this.calledDone) {
+            if(!chunk) {
+                return this._flush(callback);
+            }
+            return callback();
+        }
+        if(this.shouldEnd && !this.calledDone) {
+            this.done();
+            return callback();
         }
         if (!chunk) {
             this.bufferManager.processChunk()
-            console.warn('found end of stream');
+            this.logger.warn('found end of stream');
             return this._flush(callback);
         }
 
@@ -82,7 +109,7 @@ class ParserTransform<T> extends Transform {
 
         while(!this.bufferManager.fetchNextBuffer()) {
             if(this.shouldEnd) {
-                return this._flush(callback);
+                return callback();
             }
             if(!this.optionsManager.isAttributeInProgress()) {
                 this.bufferManager.detectRelevantObject();
@@ -93,14 +120,24 @@ class ParserTransform<T> extends Transform {
         callback();
     }
 
-    private customEmit(attribute: keyof T, data: any) {
-        this.emit(<string>attribute, data);
+    private customEmit(attribute: keyof T, data: IDataEmit) {
+        this.emit('data', <IDataEmit>{
+            attributeName: attribute,
+            ...data
+        });
+    }
+
+    private done() {
+        this.emit('done');
+        this.calledDone = true;
+        if(this.closeOnDone) {
+            this.push(null);
+            this.emit('close');
+        }
     }
 
     _flush(callback) {
-        this.push(null);
-        this.emit('done');
-        callback()
+        callback();
     }
 
     processEnd(): void {

@@ -3,7 +3,7 @@ import {IParserTransformOptions, ParserValueType} from "./json-stream-transforme
 export class JsonStreamOptionsManager<T> {
     private attributeProcessed: (keyof T)[] = [];
     private currentAttribute: keyof T;
-    constructor(private readonly options: IParserTransformOptions<T>[]) {
+    constructor(private readonly options: IParserTransformOptions<T>[], private readonly logger) {
 
     }
 
@@ -34,7 +34,7 @@ export class JsonStreamOptionsManager<T> {
             const element = JSON.parse(buffer);
             return this.options.find(o => o.attributeName === this.currentAttribute).validator(element) ? element : null
         } catch (e) {
-            console.warn('first element failed JSON.parse');
+            this.logger.warn('first element failed JSON.parse');
             return null;
         }
     }
