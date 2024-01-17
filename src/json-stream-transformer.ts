@@ -1,8 +1,4 @@
-import * as zlib from "zlib";
-
-const fs = require('fs');
-const process = require('process');
-import {pipeline, Transform, Readable} from 'stream';
+import {Transform} from 'stream';
 import {JsonStreamOptionsManager} from "./json-stream-options-manager";
 import {JsonStreamBufferManager} from "./json-stream-buffer-manager";
 import {JsonStreamElementManager} from "./json-stream-element-manager";
@@ -20,7 +16,6 @@ export enum ParserValueType {
 }
 export enum ParserMode {
     SingleObject = 'SingleObject',
-    DiscoverArrayLength = 'DiscoverArrayLength',
     BatchAndProcess = 'BatchAndProcess',
     SkipAndStream = 'SkipAndStream',
     SkipAndBatch = 'SkipAndBatch'
@@ -44,7 +39,6 @@ export interface ILogger {
     warn(message: string, additionalData?: any);
     error(message: string, additionalData?: any);
 }
-
 
 export interface IParserTransformOptions<T> {
     attributeName: keyof T,
@@ -79,12 +73,24 @@ class ParserTransform<T> extends Transform {
                 });
                 this.elementManager.on('done', () => {
                     this.bufferManager.stop();
+                    this.elementManager = null;
+                });
+                this.elementManager.on('error', (err: NodeJS.ErrnoException) => {
+                   this.emit('error', err);
+                   this.shouldEnd = true;
+                   this.calledDone = true;
                 });
             }
-           this.elementManager.processNewElement(elementBuffer);
+            this.elementManager.processNewElement(elementBuffer);
         });
         this.bufferManager.on('done', () => {
+            if(this.elementManager) {
+                this.elementManager.handleEnd();
+            }
             this.processEnd();
+            if(this.shouldEnd && !this.calledDone) {
+                this.done();
+            }
         });
     }
 
@@ -137,6 +143,9 @@ class ParserTransform<T> extends Transform {
     }
 
     _flush(callback) {
+        if(!this.calledDone) {
+            this.done();
+        }
         callback();
     }
 

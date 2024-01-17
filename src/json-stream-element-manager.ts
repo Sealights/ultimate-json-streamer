@@ -12,11 +12,12 @@ export class JsonStreamElementManager<T> extends EventEmitter{
 
     public processNewElement(buffer: string): boolean {
         if (this.elementCount === 0) {
-            console.info('validating first element');
+            this.logger.info('validating first element');
             const validate = this.attributeOptions.validator(buffer);
             if (!validate) {
-                console.warn('first element did not pass validation, resetting entry point logic...');
-                throw new Error('failed to validate first object');
+                const msg = `ValidationError: attribute ${this.attributeOptions.attributeName} failed validator`;
+                this.logger.error(msg, this.attributeOptions);
+                this.emit('error', new Error(msg));
             }
         }
         this.elementCount++;
@@ -65,14 +66,41 @@ export class JsonStreamElementManager<T> extends EventEmitter{
         return false;
     }
 
+    public handleEnd() {
+        const mode = this.attributeOptions.mode;
+        switch (mode) {
+            case ParserMode.BatchAndProcess:
+                if(this.relevantElementCount > 0) {
+                    this.emitData("[" + this.elementsArray.join(',') + "]", this.relevantElementCount,
+                        this.elementCount - this.relevantElementCount, this.elementCount);
+                }
+                break;
+            case ParserMode.SkipAndBatch:
+                if (this.relevantElementCount > 0) {
+                    this.emitData( "[" + this.elementsArray.join(',') + "]", this.relevantElementCount,
+                        this.elementCount - this.relevantElementCount, this.elementCount);
+                }
+                break;
+            default:
+                break;
+        }
+        this.emit('done');
+    }
+
     private emitData(data: string, amount?: number, startIdx?: number, endIdx?: number): void {
         const outputMode = this.attributeOptions.output;
         switch (outputMode) {
             case OutputMode.JSON:
-                this.emit('data', <IDataEmit>{
-                    data: JSON.parse(data),
-                    amount, startIdx, endIdx
-                })
+                try{
+                    this.emit('data', <IDataEmit>{
+                        data: JSON.parse(data),
+                        amount, startIdx, endIdx
+                    })
+                } catch (e) {
+                    const msg = `JSONParseError: Failed to parse output data for attribute ${this.attributeOptions.attributeName}`;
+                    this.logger.error(msg, this.attributeOptions);
+                    this.emit('error', new Error(msg));
+                }
                 break;
             case OutputMode.STRING:
                 this.emit('data', <IDataEmit>{

@@ -255,6 +255,61 @@ describe('json-transformer', () => {
                     done();
                 });
             });
+            it('should properly handle if not found', (done) => {
+                ex = jsonGen(3);
+                inputStream = new ObjectStream(ex, buf);
+                const stream = JSONStreamTransformer.createTransformStream<IExample>([{
+                    attributeName: 'l', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
+                }, {
+                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => true
+                }]);
+                const called = [];
+                let doneCalled = false;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'b'){
+                        expect(data.data).to.deep.eq(ex.b);
+                        called.push('b');
+                    }
+                });
+                stream.on('done', () => {
+                    doneCalled = true
+                })
+                pipeline([inputStream, stream], () => {
+                    expect(called).to.have.members(['b']);
+                    expect(doneCalled).to.be.true
+                    done();
+                });
+            });
+            it('should properly handle validation error', (done) => {
+                ex = jsonGen(3);
+                inputStream = new ObjectStream(ex, buf);
+                const stream = JSONStreamTransformer.createTransformStream<IExample>([{
+                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: (e) => false
+                }]);
+                const called = [];
+                let errorCalled = false;
+                let doneCalled = false;
+                stream.on('data', (data: IDataEmit) => {
+                    if(data.attributeName === 'b'){
+                        expect(data.data).to.deep.eq(ex.b);
+                        called.push('b');
+                    }
+                });
+                stream.on('done', () => {
+                    doneCalled = true
+                });
+                stream.on('error', (err: NodeJS.ErrnoException) => {
+                    errorCalled = true;
+                })
+                pipeline([inputStream, stream], (err: NodeJS.ErrnoException) => {
+                    expect(called).to.be.empty;
+                    expect(doneCalled).to.be.false;
+                    expect(errorCalled).to.be.true;
+                    expect(err.message).to.eq('ValidationError: attribute b failed validator')
+                    done();
+                });
+            });
+
         });
         context(`should properly output array using ${ParserMode.BatchAndProcess}`, () => {
             beforeEach(() => {
@@ -402,7 +457,8 @@ interface IExample {
     c: string[],
     d: string,
     e: object,
-    f: object[]
+    f: object[],
+    l?: object
 }
 
 class ObjectStream extends stream.Readable {
