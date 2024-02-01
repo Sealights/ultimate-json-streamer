@@ -11,7 +11,7 @@ import {
 } from "../../src/json-stream-transformer";
 
 const fs = require('fs');
-
+const stringifiedFunc = ((e) => true).toString();
 
 describe('performance tests', () => {
     describe('sf-citylots.json.gz', () => {
@@ -60,7 +60,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -80,7 +80,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     batchSize: 10000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -101,7 +101,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
                     batchSize: 5000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
                 pipeline(inputStream, gzUnzip, transformer, (err) => {
@@ -121,7 +121,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
                     batchSize: 5000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }], true);
 
@@ -145,7 +145,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     batchSize: 5000,
                     skip: 200000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -205,7 +205,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -225,7 +225,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.STRING
                 }]);
 
@@ -245,7 +245,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     batchSize: 10000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -265,7 +265,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     batchSize: 10000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.STRING
                 }]);
 
@@ -286,7 +286,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
                     batchSize: 5000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -307,7 +307,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
                     batchSize: 5000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }], true);
 
@@ -331,7 +331,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     batchSize: 5000,
                     skip: 30000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -350,25 +350,25 @@ describe('performance tests', () => {
                     attributeName: 'meta',
                     type: ParserValueType.Object,
                     mode: ParserMode.SingleObject,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }, {
                     attributeName: 'addedOrUpdatedComponents',
                     type: ParserValueType.Object,
                     mode: ParserMode.SingleObject,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }, {
                     attributeName: 'configurationData',
                     type: ParserValueType.Object,
                     mode: ParserMode.SingleObject,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }, {
                     attributeName: 'dependencies',
                     type: ParserValueType.Object,
                     mode: ParserMode.SingleObject,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -416,7 +416,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -436,7 +436,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     batchSize: 10000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -457,7 +457,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
                     batchSize: 5000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -505,7 +505,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -525,7 +525,7 @@ describe('performance tests', () => {
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
                     batchSize: 10000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 
@@ -546,7 +546,7 @@ describe('performance tests', () => {
                     mode: ParserMode.SkipAndStream,
                     skip: 0,
                     batchSize: 5000,
-                    validator: (e) => true,
+                    validator: stringifiedFunc,
                     output: OutputMode.JSON
                 }]);
 

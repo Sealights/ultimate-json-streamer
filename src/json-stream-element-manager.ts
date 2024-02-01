@@ -10,15 +10,16 @@ export class JsonStreamElementManager<T> extends EventEmitter{
         super();
     }
 
-    public processNewElement(buffer: string): boolean {
+    public processNewElement(buffer: string) {
         if (this.elementCount === 0) {
-            this.logger.info('validating first element');
-            const validate = this.attributeOptions.validator(buffer);
-            if (!validate) {
-                const msg = `ValidationError: attribute ${this.attributeOptions.attributeName} failed validator`;
-                this.logger.error(msg, this.attributeOptions);
-                this.emit('error', new Error(msg));
+            if(this.attributeOptions.validator) {
+                try {
+                    this.validateBuffer(buffer);
+                } catch (e) {
+                    return;
+                }
             }
+
         }
         this.elementCount++;
         const mode = this.attributeOptions.mode;
@@ -63,7 +64,6 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                 break;
         }
         this.logProgress();
-        return false;
     }
 
     public handleEnd() {
@@ -85,6 +85,23 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                 break;
         }
         this.emit('done');
+    }
+
+    private validateBuffer(buffer: string) {
+        try{
+            this.logger.info('validating first element');
+            const func = new Function('e', `return (${this.attributeOptions.validator})(e);`);
+            const validate = func(JSON.parse(buffer));
+            if (!validate) {
+                const msg = `ValidationError: attribute ${this.attributeOptions.attributeName} failed validator`;
+                this.logger.error(msg, this.attributeOptions);
+                throw new Error(msg);
+            }
+        } catch (e) {
+            this.emit('error', e);
+            throw e;
+        }
+
     }
 
     private emitData(data: string, amount?: number, startIdx?: number, endIdx?: number): void {

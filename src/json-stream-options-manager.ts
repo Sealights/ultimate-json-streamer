@@ -29,16 +29,6 @@ export class JsonStreamOptionsManager<T> {
         this.currentAttribute = attributeName;
     }
 
-    public validateObject(buffer: string): object {
-        try {
-            const element = JSON.parse(buffer);
-            return this.options.find(o => o.attributeName === this.currentAttribute).validator(element) ? element : null
-        } catch (e) {
-            this.logger.warn('first element failed JSON.parse');
-            return null;
-        }
-    }
-
     public getAttributeRegex(attributeName: keyof T): string {
         const char = this.options.find(o => o.attributeName === attributeName).type === ParserValueType.Array ? '[' : '{';
         return `"${attributeName}":\\s*\\${char}`
