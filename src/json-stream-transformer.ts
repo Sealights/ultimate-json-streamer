@@ -2,6 +2,7 @@ import {Transform} from 'stream';
 import {JsonStreamOptionsManager} from "./json-stream-options-manager";
 import {JsonStreamBufferManager} from "./json-stream-buffer-manager";
 import {JsonStreamElementManager} from "./json-stream-element-manager";
+import {appendLog} from "./utils";
 
 export class JSONStreamTransformer {
     private static transformer: ParserTransform<any>
@@ -59,7 +60,7 @@ class ParserTransform<T> extends Transform {
 
     constructor(options: IParserTransformOptions<T>[], private readonly closeOnDone = false, private logger: ILogger) {
         super({readableObjectMode: true, writableObjectMode: false, decodeStrings: false, allowHalfOpen: false});
-        this.optionsManager = new JsonStreamOptionsManager<T>(options, logger);
+        this.optionsManager = new JsonStreamOptionsManager<T>(options);
         this.bufferManager = new JsonStreamBufferManager<T>(this.optionsManager, logger);
         this.setListeners();
     }
@@ -107,7 +108,7 @@ class ParserTransform<T> extends Transform {
         }
         if (!chunk) {
             this.bufferManager.processChunk()
-            this.logger.warn('found end of stream');
+            this.logger.warn(appendLog('found end of stream'));
             return this._flush(callback);
         }
 
@@ -149,7 +150,7 @@ class ParserTransform<T> extends Transform {
         callback();
     }
 
-    processEnd(): void {
+    private processEnd(): void {
         this.optionsManager.setCurrentAttributeProcessed();
         this.shouldEnd = this.optionsManager.getAttributesToProcess().length === 0;
     }

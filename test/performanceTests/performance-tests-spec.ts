@@ -12,6 +12,7 @@ import {
 
 const fs = require('fs');
 const stringifiedFunc = ((e) => true).toString();
+import sinon = require("sinon");
 
 describe('performance tests', () => {
     describe('sf-citylots.json.gz', () => {
@@ -31,7 +32,7 @@ describe('performance tests', () => {
                counter++;
             });
             console.log(`Time for JSON parse is ${(Date.now() - start) / 1000}`);
-
+            sinon.assert.match(counter, 206560);
         });
         it('should iterate over features using stream-json', (done) => {
             let start = Date.now();
@@ -48,6 +49,7 @@ describe('performance tests', () => {
             });
             pipeline.on('end', () => {
                 console.log(`Time for stream json is ${(Date.now() - start) / 1000}`);
+                sinon.assert.match(counter, 206560);
                 done()
             });
         });
@@ -66,11 +68,12 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 206560);
                     done()
                 });
                 transformer.on('data', (data) => {
                     counter++;
-                })
+                });
             });
             it(`should iterate on all elements using ${ParserMode.BatchAndProcess}`, (done) => {
                 let start = Date.now();
@@ -78,7 +81,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'features',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.BatchAndProcess,
                     batchSize: 10000,
                     validator: stringifiedFunc,
                     output: OutputMode.JSON
@@ -86,6 +89,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 206560);
                     done()
                 });
                 transformer.on('data', (data: IDataEmit) => {
@@ -98,7 +102,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'features',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.SkipAndBatch,
                     skip: 0,
                     batchSize: 5000,
                     validator: stringifiedFunc,
@@ -106,6 +110,7 @@ describe('performance tests', () => {
                 }]);
                 pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 5000);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -118,7 +123,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'features',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.SkipAndBatch,
                     skip: 0,
                     batchSize: 5000,
                     validator: stringifiedFunc,
@@ -128,9 +133,10 @@ describe('performance tests', () => {
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     if(!err || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
                         console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                        sinon.assert.match(counter, 5000);
                         return done()
                     }
-                   throw err;
+                   sinon.assert.fail('unexpected exception occured');
                 });
                 transformer.on('data', (data) => {
                     counter += data.amount;
@@ -142,7 +148,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'features',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.SkipAndBatch,
                     batchSize: 5000,
                     skip: 200000,
                     validator: stringifiedFunc,
@@ -151,6 +157,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 5000);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -167,7 +174,7 @@ describe('performance tests', () => {
             inputStream = fs.createReadStream(path);
             gzUnzip = zlib.createGunzip();
         });
-        it('should get features using JSON.parse', () => {
+        it('should get files using JSON.parse', () => {
             let start = Date.now();
             let counter = 0;
             const obj = zlib.gunzipSync(fs.readFileSync(path));
@@ -176,9 +183,10 @@ describe('performance tests', () => {
                 counter++;
             });
             console.log(`Time for JSON parse is ${(Date.now() - start) / 1000}`);
+            sinon.assert.match(counter, 35192);
 
         });
-        it('should iterate over features using stream-json', (done) => {
+        it('should iterate over files using stream-json', (done) => {
             let start = Date.now();
             let counter = 0;
             const pipeline = chain([
@@ -193,10 +201,11 @@ describe('performance tests', () => {
             });
             pipeline.on('end', () => {
                 console.log(`Time for stream json is ${(Date.now() - start) / 1000}`);
+                sinon.assert.match(counter, 35192);
                 done()
             });
         });
-        context('should iterate over features using json-transform-stream', () => {
+        context('should iterate over files using json-transform-stream', () => {
             it(`should iterate on all elements using ${ParserMode.SkipAndStream}`, (done) => {
                 let start = Date.now();
                 let counter = 0;
@@ -211,6 +220,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 35192);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -231,6 +241,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 35192);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -243,7 +254,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'files',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.BatchAndProcess,
                     batchSize: 10000,
                     validator: stringifiedFunc,
                     output: OutputMode.JSON
@@ -251,6 +262,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 35192);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -263,7 +275,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'files',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.BatchAndProcess,
                     batchSize: 10000,
                     validator: stringifiedFunc,
                     output: OutputMode.STRING
@@ -271,6 +283,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 35192);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -283,7 +296,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'files',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.SkipAndBatch,
                     skip: 0,
                     batchSize: 5000,
                     validator: stringifiedFunc,
@@ -292,6 +305,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 5000);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -304,7 +318,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'files',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.SkipAndBatch,
                     skip: 0,
                     batchSize: 5000,
                     validator: stringifiedFunc,
@@ -314,9 +328,10 @@ describe('performance tests', () => {
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     if(!err || err.code === 'ERR_STREAM_PREMATURE_CLOSE') {
                         console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                        sinon.assert.match(counter, 5000);
                         return done()
                     }
-                    throw err;
+                    sinon.assert.fail();
                 });
                 transformer.on('data', (data) => {
                     counter += data.amount;
@@ -328,7 +343,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'files',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.SkipAndBatch,
                     batchSize: 5000,
                     skip: 30000,
                     validator: stringifiedFunc,
@@ -337,47 +352,11 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 5000);
                     done();
                 });
                 transformer.on('data', (data) => {
                     counter += data.amount;
-                });
-            });
-            it(`should output all objects requested`, (done) => {
-                let start = Date.now();
-                let counter = 0;
-                const transformer = JSONStreamTransformer.createTransformStream([{
-                    attributeName: 'meta',
-                    type: ParserValueType.Object,
-                    mode: ParserMode.SingleObject,
-                    validator: stringifiedFunc,
-                    output: OutputMode.JSON
-                }, {
-                    attributeName: 'addedOrUpdatedComponents',
-                    type: ParserValueType.Object,
-                    mode: ParserMode.SingleObject,
-                    validator: stringifiedFunc,
-                    output: OutputMode.JSON
-                }, {
-                    attributeName: 'configurationData',
-                    type: ParserValueType.Object,
-                    mode: ParserMode.SingleObject,
-                    validator: stringifiedFunc,
-                    output: OutputMode.JSON
-                }, {
-                    attributeName: 'dependencies',
-                    type: ParserValueType.Object,
-                    mode: ParserMode.SingleObject,
-                    validator: stringifiedFunc,
-                    output: OutputMode.JSON
-                }]);
-
-                const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
-                    console.log(`Time for stream json is ${(Date.now() - start) / 1000}, finished outputting ${counter} objects`);
-                    done();
-                });
-                transformer.on('data', (data) => {
-                    counter++;
                 });
             });
         });
@@ -404,6 +383,7 @@ describe('performance tests', () => {
             });
             pipeline.on('end', () => {
                 console.log(`Time for stream json is ${(Date.now() - start) / 1000}`);
+                sinon.assert.match(counter, 20);
                 done()
             });
         });
@@ -422,6 +402,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 20);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -434,7 +415,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'results',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.BatchAndProcess,
                     batchSize: 10000,
                     validator: stringifiedFunc,
                     output: OutputMode.JSON
@@ -442,20 +423,21 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 20);
                     done()
                 });
                 transformer.on('data', (data) => {
                     counter += data.amount;
                 })
             });
-            it(`should output the first 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
+            it(`should output the first 10 elements using ${ParserMode.SkipAndBatch}`, (done) => {
                 let start = Date.now();
                 let counter = 0;
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'results',
                     type: ParserValueType.Array,
                     mode: ParserMode.SkipAndStream,
-                    skip: 0,
+                    skip: 10,
                     batchSize: 5000,
                     validator: stringifiedFunc,
                     output: OutputMode.JSON
@@ -463,6 +445,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 10);
                     done()
                 });
                 transformer.on('data', (data) => {
@@ -493,6 +476,7 @@ describe('performance tests', () => {
             });
             pipeline.on('end', () => {
                 console.log(`Time for stream json is ${(Date.now() - start) / 1000}`);
+                sinon.assert.match(counter, 100);
                 done()
             });
         });
@@ -511,6 +495,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 100);
                     done();
                 });
                 transformer.on('data', (data) => {
@@ -523,7 +508,7 @@ describe('performance tests', () => {
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'txs',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
+                    mode: ParserMode.BatchAndProcess,
                     batchSize: 10000,
                     validator: stringifiedFunc,
                     output: OutputMode.JSON
@@ -531,20 +516,21 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 100);
                     done()
                 });
                 transformer.on('data', (data) => {
                     counter += data.amount;
                 })
             });
-            it(`should output the first 5000 elements using ${ParserMode.SkipAndBatch}`, (done) => {
+            it(`should output the first 50 elements using ${ParserMode.SkipAndBatch}`, (done) => {
                 let start = Date.now();
                 let counter = 0;
                 const transformer = JSONStreamTransformer.createTransformStream([{
                     attributeName: 'txs',
                     type: ParserValueType.Array,
-                    mode: ParserMode.SkipAndStream,
-                    skip: 0,
+                    mode: ParserMode.SkipAndBatch,
+                    skip: 50,
                     batchSize: 5000,
                     validator: stringifiedFunc,
                     output: OutputMode.JSON
@@ -552,6 +538,7 @@ describe('performance tests', () => {
 
                 const p = pipeline(inputStream, gzUnzip, transformer, (err) => {
                     console.log(`Time for stream json is ${(Date.now() - start) / 1000}, moved over ${counter} elements`);
+                    sinon.assert.match(counter, 50);
                     done()
                 });
                 transformer.on('data', (data) => {

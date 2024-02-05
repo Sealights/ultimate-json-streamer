@@ -3,7 +3,7 @@ import {IParserTransformOptions, ParserValueType} from "./json-stream-transforme
 export class JsonStreamOptionsManager<T> {
     private attributeProcessed: (keyof T)[] = [];
     private currentAttribute: keyof T;
-    constructor(private readonly options: IParserTransformOptions<T>[], private readonly logger) {
+    constructor(private readonly options: IParserTransformOptions<T>[]) {
 
     }
 

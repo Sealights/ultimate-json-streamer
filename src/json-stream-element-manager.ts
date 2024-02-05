@@ -1,5 +1,6 @@
 import {IDataEmit, ILogger, IParserTransformOptions, OutputMode, ParserMode} from "./json-stream-transformer";
 import {EventEmitter} from 'events';
+import {appendLog} from "./utils";
 
 export class JsonStreamElementManager<T> extends EventEmitter{
     private elementCount = 0;
@@ -12,14 +13,11 @@ export class JsonStreamElementManager<T> extends EventEmitter{
 
     public processNewElement(buffer: string) {
         if (this.elementCount === 0) {
-            if(this.attributeOptions.validator) {
-                try {
-                    this.validateBuffer(buffer);
-                } catch (e) {
-                    return;
-                }
+            try {
+                this.validateBuffer(buffer);
+            } catch (e) {
+                return;
             }
-
         }
         this.elementCount++;
         const mode = this.attributeOptions.mode;
@@ -89,13 +87,16 @@ export class JsonStreamElementManager<T> extends EventEmitter{
 
     private validateBuffer(buffer: string) {
         try{
-            this.logger.info('validating first element');
-            const func = new Function('e', `return (${this.attributeOptions.validator})(e);`);
-            const validate = func(JSON.parse(buffer));
-            if (!validate) {
-                const msg = `ValidationError: attribute ${this.attributeOptions.attributeName} failed validator`;
-                this.logger.error(msg, this.attributeOptions);
-                throw new Error(msg);
+            this.logger.info(appendLog('validating first element'));
+            const obj = JSON.parse(buffer);
+            if(this.attributeOptions.validator) {
+                const func = new Function('e', `return (${this.attributeOptions.validator})(e);`);
+                const validate = func(obj);
+                if (!validate) {
+                    const msg = `ValidationError: attribute ${this.attributeOptions.attributeName} failed validator`;
+                    this.logger.error(appendLog(msg), this.attributeOptions);
+                    throw new Error(msg);
+                }
             }
         } catch (e) {
             this.emit('error', e);
@@ -115,7 +116,7 @@ export class JsonStreamElementManager<T> extends EventEmitter{
                     })
                 } catch (e) {
                     const msg = `JSONParseError: Failed to parse output data for attribute ${this.attributeOptions.attributeName}`;
-                    this.logger.error(msg, this.attributeOptions);
+                    this.logger.error(appendLog(msg), this.attributeOptions);
                     this.emit('error', new Error(msg));
                 }
                 break;
@@ -129,18 +130,18 @@ export class JsonStreamElementManager<T> extends EventEmitter{
 
     private logProgress() {
         if (this.elementCount === 1) {
-            this.logger.info('Found first element');
+            this.logger.info(appendLog('Found first element'));
         }
         if (this.relevantElementCount === 1) {
-            this.logger.info('Found first relevant element');
+            this.logger.info(appendLog('Found first relevant element'));
         }
 
         if (this.relevantElementCount > 0 && this.relevantElementCount % 1000 === 0) {
-            this.logger.debug(`Relevant Element number ${this.elementCount}`, {
+            this.logger.debug(appendLog(`Relevant Element number ${this.elementCount}`), {
                 memoryUsage: formatBytes(process.memoryUsage().rss), cpuUsage: process.cpuUsage()
             });
         } else if (this.elementCount % 1000 === 0) {
-            this.logger.debug(`Element number ${this.elementCount}`, {
+            this.logger.debug(appendLog(`Element number ${this.elementCount}`), {
                 memoryUsage: formatBytes(process.memoryUsage().rss), cpuUsage: process.cpuUsage()
             });
         }

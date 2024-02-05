@@ -1,6 +1,7 @@
 import {ParserValueType} from "./json-stream-transformer";
 import {EventEmitter} from 'events';
 import {JsonStreamOptionsManager} from "./json-stream-options-manager";
+import {appendLog} from "./utils";
 export class JsonStreamBufferManager<T> extends EventEmitter{
     private buffer = '';
     private previousBuffer = '';
@@ -151,7 +152,7 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
         const nextAttribute = this.findClosestAttribute(detectionBuffer);
         if (nextAttribute) {
             this.options.setAttributeInProgress(nextAttribute.attribute)
-            this.logger.info(`detected start of relevant key ${nextAttribute}`);
+            this.logger.info(appendLog(`detected start of relevant key ${nextAttribute}`));
             const totalOffset = this.options.findStartOffset(detectionBuffer, nextAttribute.value);
             if(totalOffset > this.previousBuffer.length) {
                 // found in new buffer, previous buffer discard
