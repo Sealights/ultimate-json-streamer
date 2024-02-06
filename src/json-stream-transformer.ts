@@ -47,7 +47,7 @@ export interface IParserTransformOptions<T> {
     mode?: ParserMode,
     batchSize?: number, // relevant for type Array: BatchAndProcess and SkipAndBatch and SkipAndStream
     skip?: number, //  relevant for type Array: SkipAndStream and SkipAndBatch
-    validator: string // will be used to validate the object or first element of the array to make sure it is the relevant array
+    validator?: string // will be used to validate the object or first element of the array to make sure it is the relevant array
     output: OutputMode
 }
 class ParserTransform<T> extends Transform {
