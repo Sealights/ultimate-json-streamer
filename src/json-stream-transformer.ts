@@ -5,10 +5,8 @@ import {JsonStreamElementManager} from "./json-stream-element-manager";
 import {appendLog} from "./utils";
 
 export class JSONStreamTransformer {
-    private static transformer: ParserTransform<any>
     public static createTransformStream<T>(options: IParserTransformOptions<T>[], closeOnDone = false, logger?: ILogger) {
-        JSONStreamTransformer.transformer = new ParserTransform<T>(options, closeOnDone, logger || console);
-        return JSONStreamTransformer.transformer;
+        return new ParserTransform<T>(options, closeOnDone, logger || console);
     }
 }
 export enum ParserValueType {
@@ -43,12 +41,12 @@ export interface ILogger {
 
 export interface IParserTransformOptions<T> {
     attributeName: keyof T,
-    type: ParserValueType,
-    mode?: ParserMode,
-    batchSize?: number, // relevant for type Array: BatchAndProcess and SkipAndBatch and SkipAndStream
-    skip?: number, //  relevant for type Array: SkipAndStream and SkipAndBatch
-    validator?: string // will be used to validate the object or first element of the array to make sure it is the relevant array
-    output: OutputMode
+    type: ParserValueType;
+    mode?: ParserMode;
+    batchSize?: number; // relevant for type Array: BatchAndProcess and SkipAndBatch and SkipAndStream
+    skip?: number; //  relevant for type Array: SkipAndStream and SkipAndBatch
+    validator?: Function;
+    output: OutputMode;
 }
 class ParserTransform<T> extends Transform {
 

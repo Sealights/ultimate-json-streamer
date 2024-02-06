@@ -25,7 +25,6 @@ export class JsonStreamElementManager<T> extends EventEmitter{
         const skip = this.attributeOptions.skip;
         switch (mode) {
             case ParserMode.SingleObject:
-                //do
                 this.emitData(buffer);
                 break;
             case ParserMode.BatchAndProcess:
@@ -90,8 +89,7 @@ export class JsonStreamElementManager<T> extends EventEmitter{
             this.logger.info(appendLog('validating first element'));
             const obj = JSON.parse(buffer);
             if(this.attributeOptions.validator) {
-                const func = new Function('e', `return (${this.attributeOptions.validator})(e);`);
-                const validate = func(obj);
+                const validate = this.attributeOptions.validator(obj);
                 if (!validate) {
                     const msg = `ValidationError: attribute ${this.attributeOptions.attributeName} failed validator`;
                     this.logger.error(appendLog(msg), this.attributeOptions);
@@ -102,7 +100,6 @@ export class JsonStreamElementManager<T> extends EventEmitter{
             this.emit('error', e);
             throw e;
         }
-
     }
 
     private emitData(data: string, amount?: number, startIdx?: number, endIdx?: number): void {

@@ -12,7 +12,7 @@ const fs = require('fs');
 
 describe('json-transformer', () => {
     const sandbox = sinon.createSandbox();
-    const stringifiedFunc = ((e) => true).toString();
+    const func = (e) => true;
     let inputStream: ObjectStream;
     describe('validator', () => {
 
@@ -28,7 +28,7 @@ describe('json-transformer', () => {
                     ex = jsonGen(3);
                     inputStream = new ObjectStream(ex);
                     const stream = JSONStreamTransformer.createTransformStream<IExample>([{
-                        attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                        attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                     }]);
                     stream.on('data', (data: IDataEmit) => {
                         expect(data.attributeName).to.eq('e');
@@ -42,9 +42,9 @@ describe('json-transformer', () => {
                 ex = jsonGen(3);
                 inputStream = new ObjectStream(ex);
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
-                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }, {
-                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
                 const called = [];
                 stream.on('data', (data: IDataEmit) => {
@@ -71,7 +71,7 @@ describe('json-transformer', () => {
             it(`with batch no skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.BatchAndProcess, output: OutputMode.JSON,
-                    validator: stringifiedFunc, batchSize: 10
+                    validator: func, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -94,7 +94,7 @@ describe('json-transformer', () => {
             it(`with skip and batch`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.BatchAndProcess, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 20, batchSize: 10
+                    validator: func, skip: 20, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -123,7 +123,7 @@ describe('json-transformer', () => {
             it(`without skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndStream, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 0
+                    validator: func, skip: 0
                 }]);
                 const res = [];
                 let calls = 0;
@@ -142,7 +142,7 @@ describe('json-transformer', () => {
             it(`with skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndStream, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 20
+                    validator: func, skip: 20
                 }]);
                 const res = [];
                 let calls = 0;
@@ -168,7 +168,7 @@ describe('json-transformer', () => {
             it(`without skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndBatch, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 0, batchSize: 10
+                    validator: func, skip: 0, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -188,7 +188,7 @@ describe('json-transformer', () => {
             it(`with skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndBatch, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 20, batchSize: 10
+                    validator: func, skip: 20, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -222,7 +222,7 @@ describe('json-transformer', () => {
                 inputStream = new ObjectStream(ex, buf);
                 const func = (e) => e.a === true && e.b === 7
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
-                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func.toString()
+                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
                 stream.on('data', (data: IDataEmit) => {
                     if(data.attributeName === 'e') {
@@ -237,7 +237,7 @@ describe('json-transformer', () => {
                 ex = jsonGen(3);
                 inputStream = new ObjectStream(ex, buf);
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
-                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
                 stream.on('data', (data: IDataEmit) => {
                     if(data.attributeName === 'e') {
@@ -252,9 +252,9 @@ describe('json-transformer', () => {
                 ex = jsonGen(3);
                 inputStream = new ObjectStream(ex, buf);
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
-                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }, {
-                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
                 const called = [];
                 stream.on('data', (data: IDataEmit) => {
@@ -276,9 +276,9 @@ describe('json-transformer', () => {
                 ex = jsonGen(3);
                 inputStream = new ObjectStream(ex, buf);
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
-                    attributeName: 'l', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'l', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }, {
-                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: stringifiedFunc
+                    attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
                 const called = [];
                 let doneCalled = false;
@@ -300,7 +300,7 @@ describe('json-transformer', () => {
 
             it('should properly handle validation error', (done) => {
                 ex = jsonGen(3);
-                const func = ((e) => e.e === 'some data1').toString();
+                const func = (e) => e.e === 'some data1';
                 inputStream = new ObjectStream(ex, buf);
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'b', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON,
@@ -339,7 +339,7 @@ describe('json-transformer', () => {
             it(`with batch no skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.BatchAndProcess, output: OutputMode.JSON,
-                    validator: stringifiedFunc, batchSize: 10
+                    validator: func, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -358,7 +358,7 @@ describe('json-transformer', () => {
             it(`with skip and batch`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.BatchAndProcess, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 20, batchSize: 10
+                    validator: func, skip: 20, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -384,7 +384,7 @@ describe('json-transformer', () => {
             it(`without skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndStream, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 0
+                    validator: func, skip: 0
                 }]);
                 const res = [];
                 let calls = 0;
@@ -403,7 +403,7 @@ describe('json-transformer', () => {
             it(`with skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndStream, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 20
+                    validator: func, skip: 20
                 }]);
                 const res = [];
                 let calls = 0;
@@ -429,7 +429,7 @@ describe('json-transformer', () => {
             it(`without skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndBatch, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 0, batchSize: 10
+                    validator: func, skip: 0, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
@@ -449,7 +449,7 @@ describe('json-transformer', () => {
             it(`with skip`, (done) => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'f', type: ParserValueType.Array, mode: ParserMode.SkipAndBatch, output: OutputMode.JSON,
-                    validator: stringifiedFunc, skip: 20, batchSize: 10
+                    validator: func, skip: 20, batchSize: 10
                 }]);
                 const res = [];
                 let calls = 0;
