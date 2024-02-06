@@ -26,17 +26,17 @@ jobs:
       - name: Build (if necessary)
         run: npm run tsc
       - name: SeaLights Config
-        run: ./node_modules/.bin/slnodejs prConfig --token ${{ secrets.SL_TOKEN }} --appname sl-cloud-api-gateway --targetBranch ${{ github.event.pull_request.base.ref }} --pullRequestNumber ${{ github.event.pull_request.number }} --repositoryUrl https://github.com/${{ github.repository }} --latestCommit ${{ github.sha }}
+        run: ./node_modules/.bin/slnodejs prConfig --token ${{ secrets.SL_TOKEN }} --appname sealights-sl-cloud-api-gateway --targetBranch ${{ github.event.pull_request.base.ref }} --pullRequestNumber ${{ github.event.pull_request.number }} --repositoryUrl https://github.com/${{ github.repository }} --latestCommit ${{ github.sha }}
       - name: Extract Build Session ID
         run: |
           echo "BSID=$(<buildSessionId)" >> $GITHUB_ENV
       - name: SeaLights Build Scan
-        run: ./node_modules/.bin/slnodejs scan --token ${{ secrets.SL_TOKEN }} --buildsessionid ${{ BSID }} --workspacepath . --scm git --jobName UltimateJsonTransfomer/PR-${{ github.event.pull_request.number }} --resolveWithoutHash --sendContributors --usebranchcoverage true
+        run: ./node_modules/.bin/slnodejs scan --token ${{ secrets.SL_TOKEN }} --buildsessionid $BSID --workspacepath . --scm git --jobName UltimateJsonTransfomer/PR-${{ github.event.pull_request.number }} --resolveWithoutHash --sendContributors --usebranchcoverage true
       - name: List files in the workspace
         run: |
           echo "Listing files in the workspace:"
           ls -la
       - name: Run Mocha tests With Sealights
-        run: ./node_modules/.bin/slnodejs mocha --token ${{ secrets.SL_TOKEN }} --buildsessionid ${{ BSID }} --teststage Unit Tests --useslnode2 -- dist/test/unitTest --recursive --no-timeouts
+        run: ./node_modules/.bin/slnodejs mocha --token ${{ secrets.SL_TOKEN }} --buildsessionid $BSID --teststage Unit Tests --useslnode2 -- dist/test/unitTest --recursive --no-timeouts
         env:
           CI: true
