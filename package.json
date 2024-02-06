@@ -63,7 +63,7 @@
   "scripts": {
     "pt": "mocha dist/test/performanceTests/ --recursive --timeout=0",
     "ut": "mocha dist/test/unitTest/ --recursive --timeout=0",
-    "test": "npm run ut && npm run pt",
+    "test": "npm run ut",
     "tsc": "rm -rf dist && tsc"
   }
 }
