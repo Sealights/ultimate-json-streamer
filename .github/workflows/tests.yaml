@@ -19,6 +19,10 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+      - name: List files in the workspace
+        run: |
+            echo "Listing files in the workspace:"
+            ls -la
       - name: Install dependencies
         run: npm install
       - name: Install Sealights
