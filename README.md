@@ -5,7 +5,7 @@ Utilizing the power of Node.js streams, it provides a flexible way to parse, val
 the entire object into memory.
 
 It was built for purpose and therefor it has specific deficiencies:
-1. It is only written and tested for encoding `utf-8`
+1. It is only written and tested for encoding `utf-8`.
 2. It can only extract root level attributes.
 
 ## How fast is it?
@@ -77,10 +77,13 @@ Where T is the object/array to be transformed.
 The class supports several parsing modes (ParserMode enum) for different processing strategies:
 
 `SingleObject` - Detect and output an object
-`BatchAndProcess` - Output an array of objects until array end, can provide `skip` as offset element to start from. 
+
+`BatchAndProcess` - Output an array of objects until array end, can provide `skip` as offset element to start from.
 `batchSize` will output to event `data` an array for every batch.
+
 `SkipAndStream` - Output an array of objects one by one, can provide `skip` as offset element to start from. can provide
 `batchSize` and the transformer will stop when reaching the batch size.
+
 `SkipAndBatch` - Output an array of objects. , can provide `skip` as offset element to start from.
 can provide `batchSize` and the transformer will stop when reaching the batch size.
 
