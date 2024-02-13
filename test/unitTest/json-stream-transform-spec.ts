@@ -210,7 +210,7 @@ describe('json-transformer', function() {
 
     });
 
-    describe.only('multiple buffer json', () => {
+    describe('multiple buffer json', () => {
         let ex: IExample;
         let buf = 12
         afterEach(() => {
