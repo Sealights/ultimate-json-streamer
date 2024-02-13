@@ -62,6 +62,26 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
         }
         this.lastCharEscaped = false;
     }
+    public processCharsFix(char: string, index: number): void {
+        if (char === '\\') {
+            this.lastCharEscapedIndex = index;
+            return;
+        }
+        if(this.lastCharEscapedIndex === index + 1) {
+            this.lastCharEscaped = true;
+            this.lastCharEscapedIndex = undefined;
+        }
+        if (!this.lastCharEscaped && char === '"') {
+            this.openQuote = !this.openQuote;
+            return;
+        }
+        if (this.shouldIncludeBracket() && this.isFirstBracket() && (char === '{' || char === '[')) {
+            this.bracketNum--;
+        } else if (this.shouldIncludeBracket() && (char === '}' || char === ']')) {
+            this.bracketNum++;
+        }
+        this.lastCharEscaped = false;
+    }
 
     private shouldIncludeBracket() {
         return !this.openQuote && !this.lastCharEscaped
@@ -127,9 +147,14 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
         }
         const regex = new RegExp(JsonStreamBufferManager.DETECTION_REGEX);
         const attrRegex = new RegExp(attributesRegexExp.join('|'), 'g');
-        let attributeMatches = attrRegex.exec(detectionBuffer);
+        let attributeMatches = attrRegex.exec(this.buffer);
+        let detectionAttributeMatches = new RegExp(attrRegex).exec(detectionBuffer);
+        if(detectionAttributeMatches && detectionAttributeMatches.index !== (attributeMatches?.index + this.previousBuffer.length)) {
+            this.fixBuffer(attrRegex, detectionBuffer, attributeMatches ? attributeMatches[0] : undefined, attributeMatches?.index);
+            attributeMatches = new RegExp(attrRegex).exec(this.buffer);
+        }
         let match;
-        while ((match = regex.exec(detectionBuffer)) !== null) {
+        while ((match = regex.exec(this.buffer)) !== null) {
             if(!attributeMatches || attributeMatches.index > match.index) {
                 this.processSingleChar(match[0], match.index);
             } else {
@@ -139,7 +164,7 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
                         return {value: attributeMatches.index, attribute: workingOnAttr}
                     } else {
                         this.processSingleChar(match[0], match.index);
-                        attributeMatches = attrRegex.exec(detectionBuffer);
+                        attributeMatches = attrRegex.exec(this.buffer);
                     }
                 }
             }
@@ -152,30 +177,34 @@ export class JsonStreamBufferManager<T> extends EventEmitter{
         const nextAttribute = this.findClosestAttribute(detectionBuffer);
         if (nextAttribute) {
             this.options.setAttributeInProgress(nextAttribute.attribute)
-            this.logger.info(appendLog(`detected start of relevant key ${nextAttribute}`));
-            const totalOffset = this.options.findStartOffset(detectionBuffer, nextAttribute.value);
-            if(totalOffset > this.previousBuffer.length) {
-                // found in new buffer, previous buffer discard
-                const bufferOffset = totalOffset - this.previousBuffer.length;
-                this.buffer = this.buffer.substring(bufferOffset);
-                this.previousBuffer = '';
-            } else {
-                // found in previous buffer, merge prev and current buffer from that point
-                this.buffer = detectionBuffer.substring(totalOffset);
-                this.previousBuffer = '';
-            }
+            this.logger.info(appendLog(`detected start of relevant key ${nextAttribute.attribute}`));
+            const totalOffset = this.options.findStartOffset(this.buffer, nextAttribute.value);
+            this.buffer = this.buffer.substring(totalOffset);
+            this.previousBuffer = '';
         } else {
-            // not found in buffer at all, set prev as current
             this.previousBuffer = this.buffer;
             this.buffer = '';
-            this.resetTrackers();
         }
     }
 
-    private resetTrackers(){
-        this.continueOnComma = false;
-        this.openQuote = false;
-        this.lastCharEscaped = false;
+    private fixBuffer(attrRegex: RegExp, detectionBuffer: string, attributeMatch?: string, attributeIndex?: number){
+        let detectionAttributeMatches = new RegExp(attrRegex);
+        let detectionMatch;
+        while ((detectionMatch = detectionAttributeMatches.exec(detectionBuffer)) !== null) {
+            if(!attributeIndex || detectionMatch.index > this.previousBuffer.length + attributeIndex) {
+                const bufferToFix = this.previousBuffer.substring(detectionMatch.index);
+                if(bufferToFix.length >= detectionMatch.index) {
+                    continue;
+                }
+                const regex = new RegExp(JsonStreamBufferManager.DETECTION_REGEX);
+                let matchFix;
+                while ((matchFix = regex.exec(bufferToFix)) !== null) {
+                    this.processCharsFix(matchFix[0], matchFix.index);
+                }
+                this.buffer = bufferToFix + this.buffer;
+            }
+        }
+
     }
 
 }

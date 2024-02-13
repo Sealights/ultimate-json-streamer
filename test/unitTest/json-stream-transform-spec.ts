@@ -10,9 +10,10 @@ chai.use(require("chai-as-promised"));
 const expect = chai.expect;
 const fs = require('fs');
 
-describe('json-transformer', () => {
+describe('json-transformer', function() {
+    this.timeout(100000);
     const sandbox = sinon.createSandbox();
-    const func = (e) => true;
+    const func = e => true;
     let inputStream: ObjectStream;
     describe('validator', () => {
 
@@ -209,9 +210,9 @@ describe('json-transformer', () => {
 
     });
 
-    describe('multiple buffer json', () => {
+    describe.only('multiple buffer json', () => {
         let ex: IExample;
-        let buf = 4
+        let buf = 12
         afterEach(() => {
             ex = null;
             inputStream = null;
@@ -220,16 +221,19 @@ describe('json-transformer', () => {
             it('should properly validate object', (done) => {
                 ex = jsonGen(3);
                 inputStream = new ObjectStream(ex, buf);
-                const func = (e) => e.a === true && e.b === 7
+                const func = (e) => e.a === false && e.b === 7
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
+                let calls = 0;
                 stream.on('data', (data: IDataEmit) => {
                     if(data.attributeName === 'e') {
-                        expect(data.data).to.deep.eq(ex.e)
+                        expect(data.data).to.deep.eq(ex.e);
+                        calls++;
                     }
                 });
                 pipeline([inputStream, stream], () => {
+                    expect(calls).to.eq(1);
                     done()
                 });
             });
@@ -239,12 +243,15 @@ describe('json-transformer', () => {
                 const stream = JSONStreamTransformer.createTransformStream<IExample>([{
                     attributeName: 'e', type: ParserValueType.Object, mode: ParserMode.SingleObject, output: OutputMode.JSON, validator: func
                 }]);
+                let calls = 0;
                 stream.on('data', (data: IDataEmit) => {
                     if(data.attributeName === 'e') {
-                        expect(data.data).to.deep.eq(ex.e)
+                        expect(data.data).to.deep.eq(ex.e);
+                        calls++;
                     }
                 });
                 pipeline([inputStream, stream], () => {
+                    expect(calls).to.eq(1);
                     done()
                 });
             });
@@ -467,9 +474,7 @@ describe('json-transformer', () => {
                 });
             });
         });
-
     });
-
 });
 interface IExample {
     a: boolean,
@@ -486,10 +491,10 @@ class ObjectStream extends stream.Readable {
     private buffers: string[] = [];
     private sent: boolean = false;
     private bufSent = 0;
-    constructor(object: any, private readonly bufNum = 1) {
+    constructor(object: any, private readonly bufNum = 1, stringify = true) {
         super();
         // Convert the object to a string (e.g., JSON)
-        this.data = JSON.stringify(object);
+        this.data = stringify ? JSON.stringify(object) : object;
         const partLen = Math.floor(this.data.length / this.bufNum);
         for(let i= 0;i < bufNum;i++) {
             if(i === bufNum - 1) {
@@ -512,7 +517,6 @@ class ObjectStream extends stream.Readable {
 
     }
 }
-
 function jsonGen(elements: number): IExample {
     return {
         a: true,
