@@ -64,6 +64,7 @@
     "pt": "mocha dist/test/performanceTests/ --recursive --timeout=0",
     "ut": "mocha dist/test/unitTest/ --recursive --timeout=0",
     "test": "npm run ut",
-    "tsc": "rm -rf dist && tsc"
+    "tsc": "rm -rf dist && tsc",
+    "format": "npx prettier src/**/*.ts test/**/*.ts --write"
   }
 }
