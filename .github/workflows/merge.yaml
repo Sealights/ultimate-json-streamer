@@ -17,9 +17,6 @@ jobs:
           node-version: '16'
           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Bump version and push tag
         run: |
           git config --global user.email "action@github.com"
