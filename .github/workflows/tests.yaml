@@ -6,12 +6,11 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [16.x]
 
     steps:
       - uses: actions/checkout@v2
@@ -19,11 +18,21 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
       - name: Install dependencies
         run: npm install
       - name: Build
         run: npm run tsc
-      - name: Run Mocha tests With Sealights
+      - name: Run Mocha tests
         run: npm run test
         env:
           CI: true
+      - name: Publish PR version to npm
+        run: |
+          PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+          RUN_NUMBER=${GITHUB_RUN_NUMBER}
+          TAG_VERSION="pr-${PR_NUMBER}.${RUN_NUMBER}"
+          npm version prerelease --preid=${TAG_VERSION} --no-git-tag-version
+          npm publish --tag ${TAG_VERSION}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
