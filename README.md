@@ -148,7 +148,7 @@ See https://github.com/zemirco/sf-city-lots-json/blob/master/citylots.json
 |  ultimate(SkipAndBatch)   |       4990       |  JSON  | 201570 |    5000    |     No      |     6.43      |
 
 
-### Contributing
+### Contributing 
 Contributions to improve UltimateJsonStreamer are welcome. :)
 
 ### License
