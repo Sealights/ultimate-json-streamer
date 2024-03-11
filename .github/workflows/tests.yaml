@@ -19,18 +19,32 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
+
       - name: Install dependencies
         run: npm install
+
       - name: Build
         run: npm run tsc
+
       - name: Run Mocha tests With Sealights
         run: npm run test
         env:
           CI: true
-      - name: Publish PR version to npm
+
+      - name: Extract PR number
+        id: pr
+        run: echo "::set-output name=number::$(echo ${{ github.event.pull_request.number }})"
+
+      - name: Extract short SHA
+        id: sha
+        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
+
+      - name: Publish to npm
+        if: github.event_name == 'pull_request'
         run: |
-          PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
-          npm version prerelease --preid=pr-$PR_NUMBER --no-git-tag-version
-          npm publish --tag pr-$PR_NUMBER
+          PR_NUM=${{ steps.pr.outputs.number }}
+          SHORT_SHA=${{ steps.sha.outputs.sha }}
+          npm version prerelease --preid=pr${PR_NUM}.${SHORT_SHA} -m "ci: Publish PR$PR_NUM version [skip ci]"
+          npm publish --tag pr${PR_NUM}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
