@@ -149,7 +149,7 @@ See https://github.com/zemirco/sf-city-lots-json/blob/master/citylots.json
 
 
 ### Contributing
-Contributions to improve UltimateJsonStreamer are welcome. Please ensure to follow the project's contribution guidelines and code of conduct.
+Contributions to improve UltimateJsonStreamer are welcome. :)
 
 ### License
-Specify the license under which the JSONStreamTransformer is released.
+MIT
