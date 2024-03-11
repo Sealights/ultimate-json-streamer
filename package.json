@@ -66,6 +66,6 @@
     "test": "npm run ut",
     "tsc": "rm -rf dist && tsc",
     "format": "npx prettier src/**/*.ts test/**/*.ts --write"
-  }
+  },
   "license": "MIT"
 }
