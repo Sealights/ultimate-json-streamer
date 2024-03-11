@@ -1,6 +1,6 @@
 {
   "name": "@sealights/ultimate-json-streamer",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "author": {
     "name": "Avichai Shapira",
     "email": "avichai.shapira@sealights.io"
@@ -64,7 +64,8 @@
     "pt": "mocha dist/test/performanceTests/ --recursive --timeout=0",
     "ut": "mocha dist/test/unitTest/ --recursive --timeout=0",
     "test": "npm run ut",
-    "tsc": "rm -rf dist && tsc"
+    "tsc": "rm -rf dist && tsc",
+    "format": "npx prettier src/**/*.ts test/**/*.ts --write"
   },
   "license": "MIT"
 }
