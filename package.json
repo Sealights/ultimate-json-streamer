@@ -65,5 +65,6 @@
     "ut": "mocha dist/test/unitTest/ --recursive --timeout=0",
     "test": "npm run ut",
     "tsc": "rm -rf dist && tsc"
-  }
+  },
+  "license": "MIT"
 }
