@@ -67,5 +67,6 @@
     "tsc": "rm -rf dist && tsc",
     "format": "npx prettier src/**/*.ts test/**/*.ts --write"
   },
+  "keywords": ["json", "stream", "parser", "transform", "transformer"]
   "license": "MIT"
 }
