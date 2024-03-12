@@ -27,12 +27,16 @@ jobs:
         run: npm run test
         env:
           CI: true
+      - name: Authenticate with npm
+        run: echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish PR version to npm
         run: |
           PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
           RUN_NUMBER=${GITHUB_RUN_NUMBER}
           TAG_VERSION="pr-${PR_NUMBER}.${RUN_NUMBER}"
           npm version prerelease --preid=${TAG_VERSION} --no-git-tag-version
-          npm publish --tag ${TAG_VERSION}
+          npm publish --tag ${TAG_VERSION} --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
