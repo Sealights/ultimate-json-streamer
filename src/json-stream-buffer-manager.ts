@@ -52,8 +52,8 @@ export class JsonStreamBufferManager<T> extends EventEmitter {
     }
     if (this.lastCharEscapedIndex === index + 1) {
       this.lastCharEscaped = true;
-      this.lastCharEscapedIndex = undefined;
     }
+    this.lastCharEscapedIndex = undefined;
     if (!this.lastCharEscaped && char === '"') {
       this.openQuote = !this.openQuote;
       return;
@@ -76,8 +76,8 @@ export class JsonStreamBufferManager<T> extends EventEmitter {
     }
     if (this.lastCharEscapedIndex === index + 1) {
       this.lastCharEscaped = true;
-      this.lastCharEscapedIndex = undefined;
     }
+    this.lastCharEscapedIndex = undefined;
     if (!this.lastCharEscaped && char === '"') {
       this.openQuote = !this.openQuote;
       return;
@@ -147,6 +147,9 @@ export class JsonStreamBufferManager<T> extends EventEmitter {
     this.elementBuffer += currBuffer.substring(lastIndex);
     this.previousBuffer = this.buffer;
     this.buffer = "";
+    if(this.lastCharEscapedIndex !== undefined) {
+      this.lastCharEscapedIndex = -1;  // prepare for next buffer, which starts at 0.
+    }
   }
 
   private findClosestAttribute(
