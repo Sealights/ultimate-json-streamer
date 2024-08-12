@@ -48,6 +48,7 @@ jobs:
           PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
           RUN_NUMBER=${GITHUB_RUN_NUMBER}
           TAG_VERSION="pr-${PR_NUMBER}.${RUN_NUMBER}"
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           npm version prerelease --preid=${TAG_VERSION} --no-git-tag-version
           npm publish --tag pr --access public
         env:
