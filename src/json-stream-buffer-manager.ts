@@ -105,6 +105,14 @@ export class JsonStreamBufferManager<T> extends EventEmitter {
     }
     return true;
   }
+
+  private isEmptyArray(match, processType: ParserValueType): boolean {
+    const res = (processType === ParserValueType.Array
+        && match[0] === "]" && !this.options.isFirstBufferPassed() && this.bracketNum === 0)
+    this.options.setFirstBufferPassed()
+    return res
+  }
+
   public processChunk(): void {
     const regex = new RegExp(JsonStreamBufferManager.DETECTION_REGEX);
     const processType = this.options.getAttributeInProgress().type;
@@ -112,7 +120,7 @@ export class JsonStreamBufferManager<T> extends EventEmitter {
     let match;
     let currBuffer = this.buffer;
     while ((match = regex.exec(currBuffer)) !== null) {
-      if (this.continueOnComma) {
+      if (this.continueOnComma || this.isEmptyArray(match, processType)) {
         if (match[0] === "]") {
           this.emit("done");
           this.buffer = currBuffer.substring(match.index + 1);

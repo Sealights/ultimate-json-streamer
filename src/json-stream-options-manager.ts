@@ -6,6 +6,7 @@ import {
 export class JsonStreamOptionsManager<T> {
   private attributeProcessed: (keyof T)[] = [];
   private currentAttribute: keyof T;
+  private firstBufferPassed = false
   constructor(private readonly options: IParserTransformOptions<T>[]) {}
 
   public getAttributesToProcess(): (keyof T)[] {
@@ -25,10 +26,19 @@ export class JsonStreamOptionsManager<T> {
   public setCurrentAttributeProcessed() {
     this.attributeProcessed.push(this.currentAttribute);
     this.currentAttribute = null;
+    this.firstBufferPassed = false;
   }
 
   public setAttributeInProgress(attributeName: keyof T) {
     this.currentAttribute = attributeName;
+  }
+
+  public isFirstBufferPassed(): boolean {
+    return this.firstBufferPassed;
+  }
+
+  public setFirstBufferPassed() {
+    this.firstBufferPassed = true;
   }
 
   public getAttributeRegex(attributeName: keyof T): string {
