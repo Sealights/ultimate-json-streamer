@@ -106,6 +106,13 @@ export class JsonStreamBufferManager<T> extends EventEmitter {
     return true;
   }
 
+
+  /**
+   * In case the first char in the buffer is ], it could mean that there is no object to work on
+   * @param match
+   * @param processType
+   * @private
+   */
   private isEmptyArray(match, processType: ParserValueType): boolean {
     const res = (processType === ParserValueType.Array
         && match[0] === "]" && !this.options.isFirstBufferPassed() && this.bracketNum === 0)
