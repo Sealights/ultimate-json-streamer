@@ -52,7 +52,7 @@ jobs:
           npm version prerelease --preid=${TAG_VERSION} --no-git-tag-version
           npm publish --tag pr --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-release:
     needs: build-and-test
