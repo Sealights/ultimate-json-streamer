@@ -75,6 +75,20 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+        env:
+          GITHUB_TOKEN: ${{ secrets.SLDEVOPSD_PAT }}
+      - name: Get Git user
+        uses: octokit/request-action@v2.x
+        id: get_user
+        with:
+          route: GET /user
+        env:
+          GITHUB_TOKEN: ${{ secrets.SLDEVOPSD_PAT }}
+
+      - name: Output user info
+        run: |
+          echo "Git user: ${{ fromJson(steps.get_user.outputs.data).login }}"
+          echo "Git email: ${{ fromJson(steps.get_user.outputs.data).email }}"
       - name: Publish to npm
         run: |
           npm version patch
