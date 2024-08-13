@@ -87,6 +87,7 @@ jobs:
 
       - name: Output user info
         run: |
+          echo "Response: ${{ fromJson(steps.get_user.outputs.data) }}"
           echo "Git user: ${{ fromJson(steps.get_user.outputs.data).login }}"
           echo "Git email: ${{ fromJson(steps.get_user.outputs.data).email }}"
       - name: Publish to npm
