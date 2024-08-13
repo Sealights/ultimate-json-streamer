@@ -1,6 +1,6 @@
 {
   "name": "@sealights/ultimate-json-streamer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Avichai Shapira",
     "email": "avichai.shapira@sealights.io"
@@ -67,7 +67,13 @@
     "tsc": "rm -rf dist && tsc",
     "format": "npx prettier src/**/*.ts test/**/*.ts --write"
   },
-  "keywords": ["json", "stream", "parser", "transform", "transformer"],
+  "keywords": [
+    "json",
+    "stream",
+    "parser",
+    "transform",
+    "transformer"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
