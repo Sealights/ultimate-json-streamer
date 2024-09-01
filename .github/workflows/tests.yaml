@@ -85,16 +85,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SLDEVOPSD_PAT }}
 
-      - name: Configure Git
+      - name: Bump version
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
-          - name: Bump version
-            run: |
-              npm version patch -m "Bump version to %s"
-              git push
-              git push --tags
+          npm version patch -m "Bump version to %s"
+          git push
+          git push --tags
       - name: Output user info
         run: |
           echo "Response: ${{ fromJson(steps.get_user.outputs.data) }}"
