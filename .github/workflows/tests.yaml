@@ -96,29 +96,6 @@ jobs:
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Configure Git
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-        env:
-          GITHUB_TOKEN: ${{ secrets.SLDEVOPSD_PAT }}
-      - name: Create Release Branch
-        run: |
-          git checkout -b release-${{ github.sha }}
-          npm version patch -m "Bump version to %s"
-          git push origin release-${{ github.sha }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.SLDEVOPSD_PAT }}
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          title: 'Bump version'
-          body: 'Automated version bump'
-          branch: release-${{ github.sha }}
-          base: main
-        env:
-          GITHUB_TOKEN: ${{ secrets.SLDEVOPSD_PAT }}
       - name: Push changes
         run: |
           git push --follow-tags
