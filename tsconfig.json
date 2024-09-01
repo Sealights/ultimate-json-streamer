@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
+    "target": "es2021",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
     "downlevelIteration": true,
     "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
     "lib": ["dom", "es2018"],
@@ -9,7 +9,8 @@
     "watch": false,
     "outDir": "./dist",
     "experimentalDecorators": true,           /* Enables experimental support for ES7 decorators. */
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "esModuleInterop": true
   },
   "include": ["src/**/*.ts", "index.ts", "test/**/*.ts"],
   "exclude": ["**/*.d.ts"]
