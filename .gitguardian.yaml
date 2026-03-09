@@ -1,0 +1,8 @@
+version: 2
+
+secret:
+  ignored-paths:
+    - "**/*.lock"
+    - "**/node_modules/**"
+    - "**/tsOutputs/**"
+    - "**/pnpm-lock.yaml"
